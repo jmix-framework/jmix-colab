@@ -32,11 +32,10 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -48,6 +47,8 @@ public class DrawBoardView extends StandardView {
     private static final Logger log = LoggerFactory.getLogger(DrawBoardView.class);
 
     static ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+
+    static ExecutorService httpExecutorService = Executors.newVirtualThreadPerTaskExecutor();
 
     protected HttpClient client;
 
@@ -76,7 +77,7 @@ public class DrawBoardView extends StandardView {
         canvasContainer.add(canvas);
 
         client = HttpClient.newBuilder()
-                .executor(executorService)
+                .executor(httpExecutorService)
                 .build();
     }
 
@@ -92,6 +93,7 @@ public class DrawBoardView extends StandardView {
                         .header("Content-type", "image/png")
                         .build();
                 client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenApply((response) -> {
+                    log.info("Image received for event.x: {}, event.y: {}", event.getClientX(), event.getClientY());
                     uiEventPublisher.publishEventForUsers(new DrawBoardImageAddedEvent(response,
                             event.getClientX() - canvasLeft, event.getClientY() - canvasTop,
                             "data:image/png;base64," + Base64.getEncoder().encodeToString(response.body())), null);
