@@ -121,8 +121,8 @@ public class DrawBoardView extends StandardView {
 
     public static List<Double> genOpacitySeqStream(double start, double end, double step) {
         return DoubleStream.
-                concat(DoubleStream.iterate(start, d -> d < end, d -> d + step),
-                        DoubleStream.iterate(end, d -> d > start, d -> d - step))
+                concat(DoubleStream.iterate(start, d -> d < end, d -> d - step),
+                        DoubleStream.iterate(end, d -> d > start, d -> d + step))
                 .boxed()
                 .collect(Collectors.toList());
     }
@@ -136,7 +136,7 @@ public class DrawBoardView extends StandardView {
         List<String> users = new ArrayList<>() {{ add(currentAuthentication.getUser().getUsername() );}};
         if (!isCurrentUserDrawing) {
             Iterator<Integer> it = IntStream.range(0, 5).boxed().iterator();
-            genOpacitySeqStream(0.6, 1.0, 0.2).forEach((i) -> {
+            genOpacitySeqStream(1.0, 0.6, 0.2).forEach((i) -> {
                 long nextTime = Double.valueOf(it.next() * 500.0).longValue();
                 executorService.schedule(() -> {
                     uiEventPublisher.publishEventForUsers(new DrawBoardOpacityChangeEvent(i), users);
