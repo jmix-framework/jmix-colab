@@ -38,6 +38,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 @Route(value = "draw-board-view", layout = MainView.class)
 @ViewController("DrawBoardView")
@@ -119,14 +120,6 @@ public class DrawBoardView extends StandardView {
         this.drawingEnabled = false;
     }
 
-    public static List<Double> genOpacitySeqStream(double start, double end, double step) {
-        return DoubleStream.
-                concat(DoubleStream.iterate(start, d -> d < end, d -> d - step),
-                        DoubleStream.iterate(end, d -> d > start, d -> d + step))
-                .boxed()
-                .collect(Collectors.toList());
-    }
-
     @EventListener
     public void boardMoveEventHandler(DrawBoardMoveEvent event) {
         boolean isCurrentUserDrawing = currentAuthentication.getUser().getUsername().equals(event.getUsername());
@@ -136,7 +129,7 @@ public class DrawBoardView extends StandardView {
         List<String> users = new ArrayList<>() {{ add(currentAuthentication.getUser().getUsername() );}};
         if (!isCurrentUserDrawing) {
             Iterator<Integer> it = IntStream.range(0, 5).boxed().iterator();
-            genOpacitySeqStream(1.0, 0.6, 0.2).forEach((i) -> {
+            Stream.of(1.0, 0.8, 0.6, 0.8, 1.0).forEach((i) -> {
                 long nextTime = Double.valueOf(it.next() * 500.0).longValue();
                 executorService.schedule(() -> {
                     uiEventPublisher.publishEventForUsers(new DrawBoardOpacityChangeEvent(i), users);
